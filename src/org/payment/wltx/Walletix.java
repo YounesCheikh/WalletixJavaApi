@@ -48,7 +48,7 @@ public class Walletix {
 	public static void main(String[] args) {
 		
 		// Identifier (Vendor id et l'api key) 
-		new Walletix("12221", "XlJohQof6wA93NJHmHqxT3bKVqxv3DyQ");
+		new Walletix("", "");
 		
 		// générer un code de paiement
 		GeneratePaymentCode gpc = new GeneratePaymentCode("11", "100",
