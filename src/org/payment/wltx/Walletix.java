@@ -40,11 +40,8 @@ import org.w3c.dom.NodeList;
  */
 public class Walletix {
 
-	/**
-	 * The main method.
-	 *
-	 * @param args the arguments
-	 */
+	// Uncomment the following lines to test 
+	/*
 	public static void main(String[] args) {
 		
 		// Identifier (Vendor id et l'api key) 
@@ -77,7 +74,7 @@ public class Walletix {
 			System.out.println("Erreur numero : "+gpc.getStatus());
 		}
 	}
-	
+	*/
 
 	/** The Constant API_PATH. */
 	private final static String API_PATH = "https://www.walletix.com/api/";
