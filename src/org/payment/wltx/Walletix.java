@@ -33,6 +33,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class Walletix.
  * 
@@ -182,12 +183,10 @@ public class Walletix {
 	}
 
 	/**
-	 * Request from walletix server
-	 * 
-	 * @param targetURL
-	 *            the target url
-	 * @param urlParameters
-	 *            the url parameters
+	 * Request from walletix server.
+	 *
+	 * @param targetURL the target url
+	 * @param urlParameters the url parameters
 	 * @return the string[]
 	 */
 	private static String[] post(String targetURL, String urlParameters) {

@@ -18,12 +18,14 @@
 
 package org.payment.wltx;
 
+// TODO: Auto-generated Javadoc
 /**
  * The Class GeneratePaymentCode.
  * @author <a href="http://cyounes.com/">Cheikh Younes</a>
  */
 public class GeneratePaymentCode {
 
+	/** The str. */
 	private String[] str;
 	
 	/**

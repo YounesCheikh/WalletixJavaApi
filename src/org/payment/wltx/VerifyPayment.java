@@ -25,6 +25,7 @@ package org.payment.wltx;
  */
 public class VerifyPayment {
 	
+	/** The str. */
 	private String[] str;
 
 	/**

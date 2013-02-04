@@ -25,6 +25,7 @@ package org.payment.wltx;
  */
 public class DeletePayment {
 	
+	/** The str. */
 	private String[] str;
 
 	/**
