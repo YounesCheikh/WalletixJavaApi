@@ -35,91 +35,116 @@ import org.w3c.dom.NodeList;
 
 /**
  * The Class Walletix.
+ * 
  * @author <a href="http://cyounes.com/">Cheikh Younes</a>
  * @version 1.0
  */
 public class Walletix {
 
-	// Uncomment the following lines to test 
+	// Uncomment the following lines to test
 	/*
 	public static void main(String[] args) {
-		
-		// Identifier (Vendor id et l'api key) 
-		new Walletix("", "");
-		
+
+		// Identifier (Vendor id et l'api key)
+		new Walletix("", "",false);
+
 		// générer un code de paiement
 		GeneratePaymentCode gpc = new GeneratePaymentCode("11", "100",
-				"http://cyounes.com/");
-		// si le code a bien été généré sans problème 
+				"http://cyounes.com/thanks");
+		// si le code a bien été généré sans problème
 		if (gpc.getStatus() == 1) {
-			// Afficher le code de paiement 
+			// Afficher le code de paiement
 			System.out.println("Le code généré est: " + gpc.getCode());
-			
+
 			// vérifier le paiement du code généré
 			VerifyPayment vp = new VerifyPayment(gpc.getCode());
 			if (vp.getResult() == 1) {
-				System.out.println("Le paiement "+gpc.getCode()+" a bien été effectué");
+				System.out.println("Le paiement " + gpc.getCode()
+						+ " a bien été effectué");
 			} else {
-				System.out.println("Le paiement "+gpc.getCode()+" n'a pas été effectué");
+				System.out.println("Le paiement " + gpc.getCode()
+						+ " n'a pas été effectué");
 			}
 
-			// supprimer le code généré 
+			// supprimer le code généré
 			DeletePayment dp = new DeletePayment(gpc.getCode());
 			if (dp.getResult() == 1) {
 				System.out.println("Le code " + gpc.getCode()
 						+ " a bien été supprimé");
 			}
-		}
-		else {
-			System.out.println("Erreur numero : "+gpc.getStatus());
+		} else {
+			System.out.println("Erreur numero : " + gpc.getStatus());
 		}
 	}
 	*/
 
 	/** The Constant API_PATH. */
-	private final static String API_PATH = "https://www.walletix.com/api/";
-	
+	private static String API_PATH;
+
 	/** The Constant GENERATE_PAYMENT_CODE. */
 	private final static String GENERATE_PAYMENT_CODE = "paymentcode";
-	
+
 	/** The Constant DELETE_PAYMENT. */
 	private final static String DELETE_PAYMENT = "deletepayment";
-	
+
 	/** The Constant VERIFY_PAYMENT. */
 	private final static String VERIFY_PAYMENT = "paymentverification";
-	
+
 	/** The vendor id. */
 	private static String VENDOR_ID = null;
-	
+
 	/** The api key. */
 	private static String API_KEY = null;
 
 	/**
 	 * Instantiates a new walletix.
-	 *
-	 * @param VENDOR_ID the vendor id
-	 * @param API_KEY the api key
+	 * 
+	 * @param VENDOR_ID
+	 *            the vendor id
+	 * @param API_KEY
+	 *            the api key
 	 */
 	public Walletix(String VENDOR_ID, String API_KEY) {
 		Walletix.VENDOR_ID = VENDOR_ID;
 		Walletix.API_KEY = API_KEY;
+		Walletix.API_PATH = "https://www.walletix.com/api/"; 
+	}
+
+	/**
+	 * Instantiates a new walletix.
+	 * 
+	 * @param VENDOR_ID
+	 *            the vendor id
+	 * @param API_KEY
+	 *            the api key
+	 * @param sandbox true if you want to test walletix sandbox
+	 */
+	public Walletix(String VENDOR_ID, String API_KEY, boolean sandbox) {
+		Walletix.VENDOR_ID = VENDOR_ID;
+		Walletix.API_KEY = API_KEY;
+		if (sandbox) {
+			Walletix.API_PATH = "https://www.walletix.com/sandbox/api/";
+		} else {
+			Walletix.API_PATH = "https://www.walletix.com/api/";
+		}
 	}
 
 	/**
 	 * Vendor info set.
-	 *
+	 * 
 	 * @return true, if successful
 	 */
 	public static boolean vendorInfoSet() {
 		return (Walletix.VENDOR_ID != null && Walletix.API_KEY != null);
 	}
 
-
 	/**
 	 * Treat xml.
-	 *
-	 * @param is the is
-	 * @param code the code
+	 * 
+	 * @param is
+	 *            the is
+	 * @param code
+	 *            the code
 	 * @return the string[]
 	 */
 	private static String[] treatXml(InputStream is, int code) {
@@ -158,9 +183,11 @@ public class Walletix {
 
 	/**
 	 * Request from walletix server
-	 *
-	 * @param targetURL the target url
-	 * @param urlParameters the url parameters
+	 * 
+	 * @param targetURL
+	 *            the target url
+	 * @param urlParameters
+	 *            the url parameters
 	 * @return the string[]
 	 */
 	private static String[] post(String targetURL, String urlParameters) {
@@ -211,10 +238,13 @@ public class Walletix {
 
 	/**
 	 * Post payment code.
-	 *
-	 * @param purchaseID the purchase id
-	 * @param amount the amount
-	 * @param callbackUrl the callback url
+	 * 
+	 * @param purchaseID
+	 *            the purchase id
+	 * @param amount
+	 *            the amount
+	 * @param callbackUrl
+	 *            the callback url
 	 * @return the string[]
 	 */
 	@SuppressWarnings("finally")
@@ -239,11 +269,11 @@ public class Walletix {
 		}
 	}
 
-
 	/**
 	 * Post verify payment.
-	 *
-	 * @param paiementCode the paiement code
+	 * 
+	 * @param paiementCode
+	 *            the paiement code
 	 * @return the string[]
 	 */
 	@SuppressWarnings("finally")
@@ -269,8 +299,9 @@ public class Walletix {
 
 	/**
 	 * Post delete payment.
-	 *
-	 * @param paiementCode the paiement code
+	 * 
+	 * @param paiementCode
+	 *            the paiement code
 	 * @return the string[]
 	 */
 	@SuppressWarnings("finally")
