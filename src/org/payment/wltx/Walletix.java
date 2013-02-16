@@ -23,79 +23,53 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLEncoder;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLSession;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class Walletix.
  * 
  * @author <a href="http://cyounes.com/">Cheikh Younes</a>
- * @version 1.0
+ * @version 1.1
  */
 public class Walletix {
 
 	// Uncomment the following lines to test
-	/*
-	public static void main(String[] args) {
 
-		// Identifier (Vendor id et l'api key)
-		new Walletix("", "",false);
-
-		// générer un code de paiement
-		GeneratePaymentCode gpc = new GeneratePaymentCode("11", "100",
-				"http://cyounes.com/thanks");
-		// si le code a bien été généré sans problème
-		if (gpc.getStatus() == 1) {
-			// Afficher le code de paiement
-			System.out.println("Le code généré est: " + gpc.getCode());
-
-			// vérifier le paiement du code généré
-			VerifyPayment vp = new VerifyPayment(gpc.getCode());
-			if (vp.getResult() == 1) {
-				System.out.println("Le paiement " + gpc.getCode()
-						+ " a bien été effectué");
-			} else {
-				System.out.println("Le paiement " + gpc.getCode()
-						+ " n'a pas été effectué");
-			}
-
-			// supprimer le code généré
-			DeletePayment dp = new DeletePayment(gpc.getCode());
-			if (dp.getResult() == 1) {
-				System.out.println("Le code " + gpc.getCode()
-						+ " a bien été supprimé");
-			}
-		} else {
-			System.out.println("Erreur numero : " + gpc.getStatus());
-		}
-	}
-	*/
-
-	/** The Constant API_PATH. */
-	private static String API_PATH;
-
-	/** The Constant GENERATE_PAYMENT_CODE. */
-	private final static String GENERATE_PAYMENT_CODE = "paymentcode";
-
-	/** The Constant DELETE_PAYMENT. */
-	private final static String DELETE_PAYMENT = "deletepayment";
-
-	/** The Constant VERIFY_PAYMENT. */
-	private final static String VERIFY_PAYMENT = "paymentverification";
-
-	/** The vendor id. */
-	private static String VENDOR_ID = null;
-
-	/** The api key. */
-	private static String API_KEY = null;
+//	public static void main(String[] args) {
+//
+//		// Identification
+//		Walletix w = new Walletix("", "",
+//				true);
+//		String code;
+//		try {
+//			// Génération d'un nouveau code
+//			code = w.generatePaymentCode("11", "11", "http:/google.com");
+//			// Affichage
+//			System.out.println("Code: " + code);
+//
+//			// Verification
+//			System.out.println("Paiement " + code + " effectué? "
+//					+ w.verifyPayment(code));
+//
+//			// Supprission
+//			System.out.println("Le code de paiment " + code + " supprimé? "
+//					+ w.deletePayment(code));
+//
+//		} catch (Exception e) {
+//			System.out.println(e.getMessage());
+//		}
+//
+//	}
 
 	/**
 	 * Instantiates a new walletix.
@@ -106,9 +80,9 @@ public class Walletix {
 	 *            the api key
 	 */
 	public Walletix(String VENDOR_ID, String API_KEY) {
-		Walletix.VENDOR_ID = VENDOR_ID;
-		Walletix.API_KEY = API_KEY;
-		Walletix.API_PATH = "https://www.walletix.com/api/"; 
+		this.VENDOR_ID = VENDOR_ID;
+		this.API_KEY = API_KEY;
+		this.API_PATH = "https://www.walletix.com/api/";
 	}
 
 	/**
@@ -118,78 +92,114 @@ public class Walletix {
 	 *            the vendor id
 	 * @param API_KEY
 	 *            the api key
-	 * @param sandbox true if you want to test walletix sandbox
+	 * @param sandbox
+	 *            true if you want to test walletix sandbox
 	 */
 	public Walletix(String VENDOR_ID, String API_KEY, boolean sandbox) {
-		Walletix.VENDOR_ID = VENDOR_ID;
-		Walletix.API_KEY = API_KEY;
-		if (sandbox) {
-			Walletix.API_PATH = "https://www.walletix.com/sandbox/api/";
-		} else {
-			Walletix.API_PATH = "https://www.walletix.com/api/";
-		}
+		this.VENDOR_ID = VENDOR_ID;
+		this.API_KEY = API_KEY;
+		this.API_PATH = "https://www.walletix.com/";
+		API_PATH += (sandbox) ? "sandbox/api/" : "api/";
 	}
 
 	/**
-	 * Vendor info set.
+	 * Post payment code.
 	 * 
-	 * @return true, if successful
-	 */
-	public static boolean vendorInfoSet() {
-		return (Walletix.VENDOR_ID != null && Walletix.API_KEY != null);
-	}
-
-	/**
-	 * Treat xml.
-	 * 
-	 * @param is
-	 *            the is
-	 * @param code
-	 *            the code
+	 * @param purchaseID
+	 *            the purchase id
+	 * @param amount
+	 *            the amount
+	 * @param callbackUrl
+	 *            the callback url
 	 * @return the string[]
+	 * @throws Exception
 	 */
-	private static String[] treatXml(InputStream is, int code) {
-		String ret[] = { "", "" };
-		String result = (code == 1) ? "code" : "result";
+	public String generatePaymentCode(String purchaseID, String amount,
+			String callbackUrl) throws Exception {
+		String[] str;
+		String urlParameters = "";
 		try {
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			Document doc = db.parse(is);
-			doc.getDocumentElement().normalize();
-			NodeList nodeLst = doc.getElementsByTagName("response");
-			Node fstNode = nodeLst.item(0);
-
-			if (fstNode.getNodeType() == Node.ELEMENT_NODE) {
-
-				Element fstElmnt = (Element) fstNode;
-				NodeList fstElmntLst = fstElmnt.getElementsByTagName("status");
-				Element fstNodeElmnt = (Element) fstElmntLst.item(0);
-				NodeList fstN = fstNodeElmnt.getChildNodes();
-				ret[0] = ((Node) fstN.item(0)).getNodeValue();
-				// System.out.println("Status : " + ((Node)
-				// fstNm.item(0)).getNodeValue());
-				NodeList lstNodeElmntLst = fstElmnt
-						.getElementsByTagName(result);
-				Element lstNodeElmnt = (Element) lstNodeElmntLst.item(0);
-				NodeList lstN = lstNodeElmnt.getChildNodes();
-				// System.out.println("Code : " + ((Node)
-				// lstNm.item(0)).getNodeValue());
-				ret[1] = ((Node) lstN.item(0)).getNodeValue();
-			}
-		} catch (Exception e) {
-			System.err.println(e.getMessage() + "\nCause: " + e.getCause());
+			urlParameters = "vendorID="
+					+ URLEncoder.encode(this.VENDOR_ID, "UTF-8") + "&apiKey="
+					+ URLEncoder.encode(this.API_KEY, "UTF-8") + "&purchaseID="
+					+ URLEncoder.encode(purchaseID, "UTF-8") + "&amount="
+					+ URLEncoder.encode(amount, "UTF-8") + "&format="
+					+ URLEncoder.encode("'xml'", "UTF-8") + "&callbackurl="
+					+ URLEncoder.encode(callbackUrl, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			System.err.println(e.getMessage());
+		} finally {
+			str = post(this.API_PATH + this.GENERATE_PAYMENT_CODE,
+					urlParameters);
 		}
-		return ret;
+		if (str[0].equals("1")) {
+			return str[1];
+		} else
+			throw new Exception(walletixErrorMessage(str[1]));
 	}
 
 	/**
-	 * Request from walletix server.
-	 *
-	 * @param targetURL the target url
-	 * @param urlParameters the url parameters
+	 * Post verify payment.
+	 * 
+	 * @param paiementCode
+	 *            the paiement code
 	 * @return the string[]
+	 * @throws Exception
 	 */
-	private static String[] post(String targetURL, String urlParameters) {
+	public boolean verifyPayment(String paiementCode) throws Exception {
+		String urlParameters = "";
+		String[] str;
+		try {
+			urlParameters = "vendorID="
+					+ URLEncoder.encode(this.VENDOR_ID, "UTF-8") + "&apiKey="
+					+ URLEncoder.encode(this.API_KEY, "UTF-8")
+					+ "&paiementCode="
+					+ URLEncoder.encode(paiementCode, "UTF-8") + "&format="
+					+ URLEncoder.encode("'xml'", "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			System.err.println(e.getMessage());
+		} finally {
+			str = post(this.API_PATH + this.VERIFY_PAYMENT, urlParameters);
+		}
+		if (str[0].equals("1")) {
+			return str[1].equals("1");
+		} else
+			throw new Exception(walletixErrorMessage(str[1]));
+	}
+
+	/**
+	 * Post delete payment.
+	 * 
+	 * @param paiementCode
+	 *            the paiement code
+	 * @return the string[]
+	 * @throws Exception
+	 */
+	public boolean deletePayment(String paiementCode) throws Exception {
+		String[] str;
+		String urlParameters = "";
+		try {
+			urlParameters = "vendorID="
+					+ URLEncoder.encode(this.VENDOR_ID, "UTF-8") + "&apiKey="
+					+ URLEncoder.encode(this.API_KEY, "UTF-8")
+					+ "&paiementCode="
+					+ URLEncoder.encode(paiementCode, "UTF-8") + "&format="
+					+ URLEncoder.encode("'xml'", "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			System.err.println(e.getMessage());
+		} finally {
+			str = post(this.API_PATH + DELETE_PAYMENT, urlParameters);
+		}
+		if (str[0].equals("1")) {
+			return str[1].equals("1");
+		} else
+			throw new Exception(walletixErrorMessage(str[1]));
+	}
+
+	/*
+	 * Request from walletix server.
+	 */
+	private String[] post(String targetURL, String urlParameters) {
 		URL url;
 		HttpsURLConnection connection = null;
 		try {
@@ -235,92 +245,68 @@ public class Walletix {
 		}
 	}
 
-	/**
-	 * Post payment code.
-	 * 
-	 * @param purchaseID
-	 *            the purchase id
-	 * @param amount
-	 *            the amount
-	 * @param callbackUrl
-	 *            the callback url
-	 * @return the string[]
-	 */
-	@SuppressWarnings("finally")
-	protected static String[] postPaymentCode(String purchaseID, String amount,
-			String callbackUrl) {
-		String urlParameters = "";
+	private String[] treatXml(InputStream is, int code) {
+		String ret[] = { "", "" };
+		String result = (code == 1) ? "code" : "result";
 		try {
-			urlParameters = "vendorID="
-					+ URLEncoder.encode(Walletix.VENDOR_ID, "UTF-8")
-					+ "&apiKey=" + URLEncoder.encode(Walletix.API_KEY, "UTF-8")
-					+ "&purchaseID=" + URLEncoder.encode(purchaseID, "UTF-8")
-					+ "&amount=" + URLEncoder.encode(amount, "UTF-8")
-					+ "&format=" + URLEncoder.encode("'xml'", "UTF-8")
-					+ "&callbackurl=" + URLEncoder.encode(callbackUrl, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			System.err.println(e.getMessage());
-		} finally {
-			final String[] str = post(Walletix.API_PATH
-					+ Walletix.GENERATE_PAYMENT_CODE, urlParameters);
-			// System.out.println(str[0] + ":" + str[1]);
-			return str;
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			Document doc = db.parse(is);
+			doc.getDocumentElement().normalize();
+			NodeList nodeLst = doc.getElementsByTagName("response");
+			Node fstNode = nodeLst.item(0);
+
+			if (fstNode.getNodeType() == Node.ELEMENT_NODE) {
+
+				Element fstElmnt = (Element) fstNode;
+				NodeList fstElmntLst = fstElmnt.getElementsByTagName("status");
+				Element fstNodeElmnt = (Element) fstElmntLst.item(0);
+				NodeList fstN = fstNodeElmnt.getChildNodes();
+				ret[0] = ((Node) fstN.item(0)).getNodeValue();
+				// System.out.println("Status : " + ((Node)
+				// fstNm.item(0)).getNodeValue());
+				NodeList lstNodeElmntLst = fstElmnt
+						.getElementsByTagName(result);
+				Element lstNodeElmnt = (Element) lstNodeElmntLst.item(0);
+				NodeList lstN = lstNodeElmnt.getChildNodes();
+				// System.out.println("Code : " + ((Node)
+				// lstNm.item(0)).getNodeValue());
+				ret[1] = ((Node) lstN.item(0)).getNodeValue();
+			}
+		} catch (Exception e) {
+			System.err.println(e.getMessage() + "\nCause: " + e.getCause());
 		}
+		return ret;
 	}
 
-	/**
-	 * Post verify payment.
-	 * 
-	 * @param paiementCode
-	 *            the paiement code
-	 * @return the string[]
-	 */
-	@SuppressWarnings("finally")
-	protected static String[] postVerifyPayment(String paiementCode) {
-		String urlParameters = "";
-		try {
-			urlParameters = "vendorID="
-					+ URLEncoder.encode(Walletix.VENDOR_ID, "UTF-8")
-					+ "&apiKey=" + URLEncoder.encode(Walletix.API_KEY, "UTF-8")
-					+ "&paiementCode="
-					+ URLEncoder.encode(paiementCode, "UTF-8") + "&format="
-					+ URLEncoder.encode("'xml'", "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			System.err.println(e.getMessage());
-		} finally {
-			final String[] str = post(Walletix.API_PATH + VERIFY_PAYMENT,
-					urlParameters);
-			// System.out.println(str[0] + ":" + str[1]);
-			return str;
-		}
-		// return 0;
+	private String walletixErrorMessage(String error) {
+		String retMessage = new String();
+		if (error.equals("0"))
+			retMessage = "erreur lors de la génération du code de paiement";
+		else if (error.equals("-1"))
+			retMessage = "le N° de commande ou le montant ne sont pas numérique";
+		else if (error.equals("-2"))
+			retMessage = "ID utilisateur non numérique";
+		else if (error.equals("-3"))
+			retMessage = "problème d’authentification (vendorID et/ou apiKey incorrect)";
+		return retMessage;
 	}
 
-	/**
-	 * Post delete payment.
-	 * 
-	 * @param paiementCode
-	 *            the paiement code
-	 * @return the string[]
-	 */
-	@SuppressWarnings("finally")
-	protected static String[] postDeletePayment(String paiementCode) {
-		String urlParameters = "";
-		try {
-			urlParameters = "vendorID="
-					+ URLEncoder.encode(Walletix.VENDOR_ID, "UTF-8")
-					+ "&apiKey=" + URLEncoder.encode(Walletix.API_KEY, "UTF-8")
-					+ "&paiementCode="
-					+ URLEncoder.encode(paiementCode, "UTF-8") + "&format="
-					+ URLEncoder.encode("'xml'", "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			System.err.println(e.getMessage());
-		} finally {
-			final String[] str = post(Walletix.API_PATH + DELETE_PAYMENT,
-					urlParameters);
-			// System.out.println(str[0] + ":" + str[1]);
-			return str;
-		}
-		// return 0;
-	}
+	/** The Constant API_PATH. */
+	private String API_PATH;
+
+	/** The Constant GENERATE_PAYMENT_CODE. */
+	private final String GENERATE_PAYMENT_CODE = "paymentcode";
+
+	/** The Constant DELETE_PAYMENT. */
+	private final String DELETE_PAYMENT = "deletepayment";
+
+	/** The Constant VERIFY_PAYMENT. */
+	private final String VERIFY_PAYMENT = "paymentverification";
+
+	/** The vendor id. */
+	private String VENDOR_ID = null;
+
+	/** The Api key. */
+	private String API_KEY = null;
 }
